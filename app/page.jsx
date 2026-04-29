@@ -4,7 +4,11 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div>
-      <Button variant="gold" size="hero">Subscribe</Button>
+      <section className="pt-28 sm:pt-32">
+        <Button variant="gold" size="hero">
+          Subscribe
+        </Button>
+      </section>
     </div>
   );
 }
