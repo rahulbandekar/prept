@@ -1,6 +1,8 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+import Image from "next/image";
 
 const Header = () => {
   return (
@@ -18,13 +20,11 @@ const Header = () => {
 
       {/* Redirection logic */}
 
-
       {/* Sign In */}
       <div className="flex items-center gap-3">
         <Show when="signed-out">
-            {/* Links  */}
+          {/* Links  */}
 
-            
           <SignInButton mode="modal">
             <Button variant="ghost">Sign In</Button>
           </SignInButton>
