@@ -45,7 +45,18 @@ export default function RootLayout({ children }) {
             <Toaster richColors />
 
             <footer className="relative z-10 border-t border-white/7 py-12  mx-auto px-6 flex flex-wrap items-center justify-center text-stone-400">
-              Made with ❤️ by Rahul Bandekar
+              <p className="text-sm text-center">
+                &copy; {new Date().getFullYear()} Prept. Built by{" "}
+                <a
+                  href="https://github.com/rahulbandekar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-400 hover:underline transition-colors"
+                >
+                  Rahul Bandekar
+                </a>
+                . All rights reserved.
+              </p>
             </footer>
           </ThemeProvider>
         </body>

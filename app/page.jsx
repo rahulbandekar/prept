@@ -1,11 +1,47 @@
 import { GravityStarsBackground } from "@/components/animate-ui/components/backgrounds/gravity-stars";
+import BentoCard from "@/components/BentoCard";
 import { CodeDemo } from "@/components/demo-components-animate-code";
-import { GoldTitle, GrayTitle } from "@/components/reusables";
+import {
+  GoldTitle,
+  GrayTitle,
+  SectionHeading,
+  SectionLabel,
+} from "@/components/reusables";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AVATARS } from "@/lib/data";
+import { AI_TAGS, AVATARS, LOGOS, SLOTS } from "@/lib/data";
+import { Bot, Wallet } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+function MockUI({ rows = 3 }) {
+  const widths = ["w-4/5", "w-3/5", "w-2/5", "w-4/5", "w-1/2"];
+  const colors = [
+    "bg-white/5",
+    "bg-white/5",
+    "bg-amber-400/15",
+    "bg-white/5",
+    "bg-white/5",
+  ];
+
+  return (
+    <div className="mt-5 rounded-xl bg-[#141417] border border-white/10 overflow-hidden">
+      <div className="h-9 bg-white/5 border-b border-white/10 flex items-center px-3.5 gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-[#ff5f57]" />
+        <span className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+        <span className="w-2 h-2 rounded-full bg-[#28c840]" />
+      </div>
+      <div className="p-4 flex flex-col gap-2">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div
+            key={i}
+            className={`h-2 rounded-full ${widths[i]} ${colors[i]}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -72,6 +108,129 @@ export default function Home() {
             className="w-full h-auto rounded-xl drop-shadow-lg"
           /> */}
           <CodeDemo duration={30000} writing />
+        </div>
+      </section>
+
+      <section className="relative border-y border-white/10 py-14">
+        <p className="text-center text-xs font-medium text-stone-600 tracking-widest uppercase mb-8">
+          Interviewees Landeed at
+        </p>
+        <div className="flex items-center justify-center gap-24 px-6">
+          {LOGOS.map((logo) => (
+            <Image
+              key={logo.alt}
+              src={logo.src}
+              alt={logo.alt}
+              width={50}
+              height={50}
+              className="h-10 w-auto opacity-60 grayscale hover:grayscale-0 transition-all duration-300"
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="relative z-10 py-28 m-w-5xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <SectionLabel>Features</SectionLabel>
+          <SectionHeading
+            Gray="Everything you need,"
+            Gold="nothing you don't"
+          />
+        </div>
+
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-12 md:col-span-7">
+            <BentoCard
+              icon={<Bot size={20} className="text-amber-400" />}
+              title={<GrayTitle>AI Question Generator</GrayTitle>}
+              desc="Interviewers get a live AI co-pilot generating role-specific questions on demand — system design, behavioural, DSA — all tailored to the candidate's level."
+            >
+              <div className="flex flex-wrap gap-2 mt-5">
+                {AI_TAGS.map((t) => (
+                  <Badge key={t.label} variant={t.active ? "gold" : "outline"}>
+                    {t.label}
+                  </Badge>
+                ))}
+              </div>
+            </BentoCard>
+          </div>
+
+          <div className="col-span-12 md:col-span-5">
+            <BentoCard
+              icon={<Wallet size={16} className="text-amber-400" />}
+              title={<GrayTitle>Credit System</GrayTitle>}
+              desc="Subscribe for monthly credits. Book sessions. Interviewers earn and withdraw any time."
+            >
+              <div className="mt-5 rounded-xl bg-[#141417] border border-white/10 p-5 flex justify-between items-end">
+                <div>
+                  <p className="text-xs text-stone-600 mb-1">Your balance</p>
+                  <p className="font-serif text-4xl leading-none bg-linear-to-br from-amber-300 to-amber-500 bg-clip-text text-transparent">
+                    28
+                  </p>
+                  <p className="text-xs text-stone-600 mt-1">
+                    credits remaining
+                  </p>
+                </div>
+
+                <Badge variant="secondary">+10 this month</Badge>
+              </div>
+            </BentoCard>
+          </div>
+
+          <div className="col-span-12 md:col-span-4">
+            <BentoCard
+              icon="📹"
+              title="HD Video Calls"
+              desc="Powered by Stream. Screen sharing, recording, and instant playback links — all built in."
+            >
+              <MockUI rows={3} />
+            </BentoCard>
+          </div>
+
+          <div className="col-span-12 md:col-span-4">
+            <BentoCard
+              icon="💬"
+              title="Persistent Chat"
+              desc="Message your interviewer before and after the call. Share resources, prep notes, and follow-ups in one thread."
+            />
+          </div>
+
+          <div className="col-span-12 md:col-span-4">
+            <BentoCard
+              icon="🔒"
+              title="Security by Arcjet"
+              desc="Bot protection, rate limiting, and abuse prevention baked into every API route."
+            />
+          </div>
+
+          <div className="col-span-12 md:col-span-6">
+            <BentoCard
+              icon="📊"
+              title={<GrayTitle>AI Feedback Reports</GrayTitle>}
+              desc="Post-interview analysis by Gemini with actionable insights."
+            >
+              <MockUI rows={5} />
+            </BentoCard>
+          </div>
+
+          <div className="col-span-12 md:col-span-6">
+            <BentoCard
+              icon="🗓️"
+              title={<GoldTitle>Slot-based Scheduling</GoldTitle>}
+              desc="Interviewers set availability once. Interviewees pick from open slots and confirm with one click — no back-and-forth needed."
+            >
+              <div className="flex flex-wrap gap-2 mt-5">
+                {SLOTS.map((s) => (
+                  <span
+                    key={s.label}
+                    className={`text-xs px-3 py-1.5 rounded-lg border ${s.cls}`}
+                  >
+                    {s.label}
+                  </span>
+                ))}
+              </div>
+            </BentoCard>
+          </div>
         </div>
       </section>
     </div>
