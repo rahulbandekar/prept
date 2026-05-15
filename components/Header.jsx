@@ -3,11 +3,21 @@ import { Button } from "./ui/button";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
+import { checkUser } from "@/lib/checkUser";
+import RoleRedirect from "./RoleRedirect";
+import CreditButton from "./CreditButton";
+import { CalendarDays, Users } from "lucide-react";
 
-const Header = () => {
+const Header = async () => {
+  const user = await checkUser();
+
+  // Debug log
+  console.log("User data:", user);
+  console.log("Credit Balance:", user?.creditBalance);
+  console.log("Credits:", user?.credits);
+
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-10 py-3 border-b border-white/7 backdrop-blur-xl">
-      {/* Logo */}
+    <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-3 sm:px-10 py-3 border-b border-white/7 backdrop-blur-xl">
       <Link href="/">
         <Image
           src="/logo.png"
@@ -18,21 +28,50 @@ const Header = () => {
         />
       </Link>
 
-      {/* Redirection logic */}
+      {user && <RoleRedirect role={user.role} />}
 
-      {/* Sign In */}
       <div className="flex items-center gap-3">
         <Show when="signed-out">
-          {/* Links  */}
-
           <SignInButton mode="modal">
-            <Button variant="ghost">Sign In</Button>
+            <Button variant="ghost">Sign in</Button>
           </SignInButton>
-          <SignUpButton>
-            <Button variant="gold">Get Started →</Button>
-          </SignUpButton>
+          <SignInButton mode="modal">
+            <Button variant="gold">Get started →</Button>
+          </SignInButton>
         </Show>
+
         <Show when="signed-in">
+          {user?.role === "INTERVIEWER" && (
+            <Button variant="ghost" asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          )}
+
+          {user?.role === "INTERVIEWEE" && (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/explore">
+                  <Users size={16} />
+                  <span className="hidden md:inline">Explore</span>
+                </Link>
+              </Button>
+              <Button variant="default" asChild>
+                <Link href="/appointments">
+                  <CalendarDays size={16} />
+                  <span className="hidden md:inline">My Appointments</span>
+                </Link>
+              </Button>
+            </>
+          )}
+
+          <CreditButton
+            role={user?.role === "INTERVIEWER" ? "INTERVIEWER" : "INTERVIEWEE"}
+            credits={
+              (user?.role === "INTERVIEWER"
+                ? user?.creditBalance
+                : user?.credits) ?? 0
+            }
+          />
           <UserButton />
         </Show>
       </div>
