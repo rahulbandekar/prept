@@ -1,14 +1,33 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import arcjet, { detectBot, shield } from "@arcjet/next";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/appointments(.*)",
   "/dashboard(.*)",
   "/explore(.*)",
   "/onboarding(.*)",
-])
+]);
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE", "CATAEGORY:PREVIEW"],
+    }),
+  ],
+});
 
 export default clerkMiddleware(async (auth, req) => {
+  //Apply Arcjet protection First, before auth check to avoid unnecessary auth calls for bots and bad actors
+  const decision = await aj.protect(req);
+
+  if (decision.isDenied()) {
+    return new NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
   const { userId } = await auth();
 
   if (!userId && isProtectedRoute(req)) {
@@ -22,8 +41,8 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
-    '/(api|trpc)(.*)',
+    "/(api|trpc)(.*)",
   ],
 };
