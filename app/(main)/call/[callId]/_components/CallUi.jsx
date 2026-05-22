@@ -1,0 +1,181 @@
+"use client";
+
+import { useEffect, useCallback, useState } from "react";
+
+// Stream Video
+import {
+  StreamTheme,
+  SpeakerLayout,
+  useCallStateHooks,
+  useCall,
+  CallingState,
+  CallControls,
+} from "@stream-io/video-react-sdk";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
+
+// Stream Chat
+import {
+  Chat,
+  Channel,
+  MessageList,
+  MessageComposer,
+  Window,
+} from "stream-chat-react";
+import { useCreateChatClient } from "stream-chat-react";
+import "stream-chat-react/dist/css/index.css";
+
+import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Sparkles, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AIQuestionsPanel from "./AIQuestionsPanel";
+
+// ─── Call UI (inside StreamCall context) ─────────────────────────────────────
+
+export default function CallUI({
+  callId,
+  isInterviewer,
+  booking,
+  onLeave,
+  apiKey,
+  token,
+  currentUser,
+}) {
+  const { useCallCallingState } = useCallStateHooks();
+  const call = useCall();
+  const callingState = useCallCallingState();
+
+  const [activeTab, setActiveTab] = useState("chat");
+
+  // Auto-stop recording before leaving
+  const handleLeave = useCallback(async () => {
+    try {
+      if (call) {
+        const isRecording = call.state?.recording;
+        if (isRecording) {
+          await call.stopRecording().catch(() => {});
+        }
+        await call.leave().catch(() => {});
+      }
+    } finally {
+      onLeave();
+    }
+  }, [call, onLeave]);
+
+  // ── Chat client — same token works for both Video + Chat SDKs ──
+  const chatClient = useCreateChatClient({
+    apiKey,
+    tokenOrProvider: token,
+    userData: {
+      id: currentUser.id,
+      name: currentUser.name,
+      image: currentUser.imageUrl,
+    },
+  });
+
+  const [chatChannel, setChatChannel] = useState(null);
+
+  useEffect(() => {
+    if (!chatClient) return;
+
+    const channel = chatClient.channel("messaging", callId, {
+      name: "Interview Chat",
+      members: [
+        booking.interviewer.clerkUserId,
+        booking.interviewee.clerkUserId,
+      ],
+    });
+
+    channel
+      .watch()
+      .then(() => setChatChannel(channel))
+      .catch(console.error);
+
+    return () => {
+      channel.stopWatching().catch(() => {});
+    };
+  }, [chatClient, callId, booking]);
+
+  if (callingState === CallingState.LEFT) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center gap-3">
+        <p className="text-stone-400 text-sm">Leaving call…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[92vh] bg-[#0a0a0b] flex flex-col overflow-hidden">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/8 shrink-0">
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="outline"
+            className="border-white/10 text-stone-500 text-xs"
+          >
+            {booking.interviewer.name}
+            <span className="text-stone-700 mx-1.5">×</span>
+            {booking.interviewee.name}
+          </Badge>
+          {isInterviewer && (
+            <Badge
+              variant="outline"
+              className="border-amber-400/20 bg-amber-400/5 text-amber-400 text-xs"
+            >
+              Interviewer
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Body: video + side panel */}
+      <div className="flex flex-1 min-h-0">
+        {/* ── LEFT: Video ── */}
+        <div className="flex flex-col flex-1 min-w-0">
+          <StreamTheme>
+            <SpeakerLayout participantBarPosition="bottom" />
+            <CallControls onLeave={handleLeave} />
+          </StreamTheme>
+        </div>
+
+        {/* ── RIGHT: Chat / AI panel ── */}
+        <div className="w-85 shrink-0 flex flex-col border-l border-white/8 bg-[#0a0a0b]">
+          {/* Tab switcher */}
+
+          <Tabs defaultValue="chat" className="h-full">
+            <TabsList variant="line" className={"w-full"}>
+              <TabsTrigger value="chat" className={"w-1/2 h-6 py-2"}>
+                <MessageSquare size={14} className="text-stone-400" />
+                Chat
+              </TabsTrigger>
+              {true && (
+                <TabsTrigger value="questions" className={"w-1/2 h-6 py-2"}>
+                  <Sparkles size={14} className="text-stone-400" />
+                  AI Questions
+                </TabsTrigger>
+              )}
+            </TabsList>
+            <TabsContent value="chat">
+              {chatClient && chatChannel ? (
+                <Chat client={chatClient} theme="str-chat__theme-dark">
+                  <Channel channel={chatChannel}>
+                    <Window>
+                      <MessageList />
+                      <MessageComposer />
+                    </Window>
+                  </Channel>
+                </Chat>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 size={18} className="text-stone-600 animate-spin" />
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="questions">
+              <AIQuestionsPanel categories={booking.categories} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
+}
