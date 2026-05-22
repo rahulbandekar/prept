@@ -30,7 +30,7 @@ const Header = async () => {
 
       {user && <RoleRedirect role={user.role} />}
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" suppressHydrationWarning={true}>
         <Show when="signed-out">
           <SignInButton mode="modal">
             <Button variant="ghost">Sign in</Button>
