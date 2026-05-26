@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import arcjet, { detectBot, shield } from "@arcjet/next";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -18,21 +20,21 @@ const aj = arcjet({
     shield({ mode: "LIVE" }),
     detectBot({
       mode: "LIVE",
-      allow: ["CATEGORY:SEARCH_ENGINE", "CATEEGORY:PREVIEW"],
+      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
     }),
   ],
 });
 
 export default clerkMiddleware(async (auth, req) => {
   //Apply Arcjet protection First, before auth check to avoid unnecessary auth calls for bots and bad actors
-   // Skip Arcjet for trusted webhook routes
-   if (!isWebhookRoute(req)) {
-  const decision = await aj.protect(req);
+  // Skip Arcjet for trusted webhook routes
+  if (!isWebhookRoute(req)) {
+    const decision = await aj.protect(req);
 
-  if (decision.isDenied()) {
-    return new NextResponse.json({ error: "Access denied" }, { status: 403 });
+    if (decision.isDenied()) {
+      return new NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
   }
-}
 
   const { userId } = await auth();
 
