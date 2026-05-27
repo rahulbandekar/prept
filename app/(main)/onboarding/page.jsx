@@ -205,7 +205,7 @@ export default function OnboardingPage() {
                 {/* bio */}
                 <Textarea
                   rows={4}
-                  maxLength={300}
+                  maxLength={600}
                   placeholder="Tell interviewees about your background, what you specialise in, and what they can expect from a session with you."
                   value={form.bio}
                   onChange={(e) =>

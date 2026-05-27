@@ -2,6 +2,7 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export const completeOnboarding = async (data) => {
   const user = await currentUser();
@@ -56,6 +57,8 @@ export const completeOnboarding = async (data) => {
         }),
       },
     });
+
+    revalidatePath("/", "layout");
 
     return { success: true };
   } catch (error) {
