@@ -6,6 +6,12 @@ import { StreamClient } from "@stream-io/node-sdk";
 import { revalidatePath } from "next/cache";
 import { request } from "@arcjet/next";
 import { createRateLimiter, checkRateLimit } from "@/lib/arcjet";
+import { Resend } from "resend";
+import { render } from "@react-email/render";
+import { BookingConfirmationEmail } from "@/emails/BookingConfirmationEmail";
+import { format } from "date-fns";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 5 booking attempts per hour — generous enough for real users,
 // tight enough to block automated abuse
@@ -48,7 +54,6 @@ export const getInterviewerProfile = async (interviewerId) => {
 };
 
 export const bookSlot = async ({ interviewerId, startTime, endTime }) => {
-
   const user = await currentUser();
 
   if (!user) throw new Error("Unauthorized");
@@ -67,8 +72,6 @@ export const bookSlot = async ({ interviewerId, startTime, endTime }) => {
     db.user.findUnique({ where: { clerkUserId: user.id } }),
     db.user.findUnique({ where: { id: interviewerId } }),
   ]);
-
- 
 
   if (!dbUser || dbUser.role !== "INTERVIEWEE")
     throw new Error("Only interviewees can book sessions");
@@ -96,12 +99,10 @@ export const bookSlot = async ({ interviewerId, startTime, endTime }) => {
   // ── Create Stream call ─────────────────────────────────────────────────────
   let streamCallId;
   try {
-
     const streamClient = new StreamClient(
       process.env.NEXT_PUBLIC_STREAM_API_KEY,
       process.env.STREAM_SECRET_KEY
     );
-
 
     await streamClient.upsertUsers([
       {
@@ -148,7 +149,6 @@ export const bookSlot = async ({ interviewerId, startTime, endTime }) => {
   }
 
   try {
-
     const booking = await db.$transaction(async (tx) => {
       const newBooking = await tx.booking.create({
         data: {
@@ -183,9 +183,57 @@ export const bookSlot = async ({ interviewerId, startTime, endTime }) => {
       return newBooking;
     });
 
-
     revalidatePath(`/interviewers/${interviewerId}`);
     revalidatePath("/dashboard");
+
+    // ── Booking confirmation emails — non-blocking ─────────────────────────
+    try {
+      const dateStr = format(new Date(startTime), "EEEE, MMMM d, yyyy");
+      const timeStr = `${format(new Date(startTime), "h:mm a")} – ${format(new Date(endTime), "h:mm a")}`;
+      const duration = "45 minutes";
+
+      await Promise.all([
+        // Email to interviewee
+        render(
+          BookingConfirmationEmail({
+            recipientName: dbUser.name ?? "there",
+            otherPersonName: interviewer.name ?? "your interviewer",
+            otherPersonRole: "Interviewer",
+            date: dateStr,
+            time: timeStr,
+            duration,
+          })
+        ).then((html) =>
+          resend.emails.send({
+            from: "Prept <onboarding@resend.dev>",
+            to: dbUser.email,
+            subject: `Your session with ${interviewer.name} is confirmed`,
+            html,
+          })
+        ),
+        // Email to interviewer
+        render(
+          BookingConfirmationEmail({
+            recipientName: interviewer.name ?? "there",
+            otherPersonName: dbUser.name ?? "your interviewee",
+            otherPersonRole: "Interviewee",
+            date: dateStr,
+            time: timeStr,
+            duration,
+          })
+        ).then((html) =>
+          resend.emails.send({
+            from: "Prept <onboarding@resend.dev>",
+            to: interviewer.email,
+            subject: `New session booked by ${dbUser.name}`,
+            html,
+          })
+        ),
+      ]);
+    } catch (emailErr) {
+      console.error("Booking confirmation email failed:", emailErr);
+      // non-blocking — booking already succeeded
+    }
 
     return { success: true, bookingId: booking.id, streamCallId };
   } catch (err) {

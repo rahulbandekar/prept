@@ -40,6 +40,7 @@ export function AppointmentCard({ booking, mode, isPast = false }) {
       : "border-amber-400/20 bg-amber-400/5 text-amber-400";
 
   const isUpcoming = status === "SCHEDULED";
+  const isProcessing = status === "SCHEDULED" && isPast;
 
   return (
     <>
@@ -97,8 +98,17 @@ export function AppointmentCard({ booking, mode, isPast = false }) {
           </div>
 
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <Badge variant="outline" className={STATUS_STYLES[status]}>
-              {status.charAt(0) + status.slice(1).toLowerCase()}
+            <Badge
+              variant="outline"
+              className={
+                isProcessing
+                  ? "border-yellow-500/20 bg-yellow-500/10 text-yellow-400"
+                  : STATUS_STYLES[status]
+              }
+            >
+              {isProcessing
+                ? "Processing"
+                : status.charAt(0) + status.slice(1).toLowerCase()}
             </Badge>
             <Badge variant="outline" className={creditsStyle}>
               {creditsLabel}
@@ -154,6 +164,21 @@ export function AppointmentCard({ booking, mode, isPast = false }) {
             <p className="text-xs text-stone-400 font-light leading-relaxed line-clamp-2">
               {feedback.summary}
             </p>
+          </div>
+        )}
+
+        {isProcessing && (
+          <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 flex items-start gap-3">
+            <span className="text-lg">⏳</span>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-xs font-medium text-yellow-400">
+                Processing your session
+              </p>
+              <p className="text-xs text-stone-500 font-light leading-relaxed">
+                Your recording and AI feedback are being generated. This usually
+                takes a few minutes after the call ends.
+              </p>
+            </div>
           </div>
         )}
 
