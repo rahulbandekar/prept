@@ -32,7 +32,7 @@ export default clerkMiddleware(async (auth, req) => {
     const decision = await aj.protect(req);
 
     if (decision.isDenied()) {
-      return new NextResponse.json({ error: "Access denied" }, { status: 403 });
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
   }
 
