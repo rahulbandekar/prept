@@ -20,7 +20,7 @@ export default async function InterviewerProfilePage({ params }) {
 
   const dbUser = await db.user.findUnique({
     where: { clerkUserId: user.id },
-    select: { role: true, credits: true },
+    select: { role: true, credits: true, currentPlan: true },
   });
 
   if (!dbUser) redirect("/");
@@ -139,7 +139,9 @@ export default async function InterviewerProfilePage({ params }) {
               </p>
             </div>
             <ul className="flex flex-col gap-5">
-              {EXPECT_ITEMS.map(([icon, title, desc]) => (
+              {EXPECT_ITEMS.filter(([, , , plans]) =>
+                plans.includes(dbUser.currentPlan)
+              ).map(([icon, title, desc]) => (
                 <li key={title} className="flex items-start gap-4">
                   <span className="mt-0.5 w-10 h-10 shrink-0 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-lg">
                     {icon}
@@ -155,6 +157,15 @@ export default async function InterviewerProfilePage({ params }) {
                 </li>
               ))}
             </ul>
+            {dbUser.currentPlan !== "pro" && (
+              <p className="text-xs text-stone-600 mt-2">
+                Upgrade your plan to unlock more features like{" "}
+                {dbUser.currentPlan === "free"
+                  ? "AI Feedback Reports and Recording & Playback"
+                  : "Recording & Playback"}
+                .
+              </p>
+            )}
           </div>
         </div>
 
