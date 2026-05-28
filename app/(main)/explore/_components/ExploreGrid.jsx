@@ -77,20 +77,43 @@ export default function ExploreGrid({ interviewers }) {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="py-20 text-center">
-          <p className="text-stone-600 text-sm">
-            No interviewers match your filters.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCategory(null);
-              setSearch("");
-            }}
-            className="text-xs text-amber-400 mt-2 hover:text-amber-300 transition-colors"
-          >
-            Clear filters
-          </button>
+        <div className="py-28 flex flex-col items-center gap-5 text-center">
+          <span className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-2xl">
+            🔍
+          </span>
+          <div>
+            {interviewers.length === 0 ? (
+              <>
+                <p className="text-base text-stone-400 font-light">
+                  No interviewers yet.
+                </p>
+                <p className="text-sm text-stone-600 mt-1">
+                  Check back soon — new experts are joining every week.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-base text-stone-400 font-light">
+                  No interviewers match your filters.
+                </p>
+                <p className="text-sm text-stone-600 mt-1">
+                  Try a different category or clear your search.
+                </p>
+              </>
+            )}
+          </div>
+          {interviewers.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory(null);
+                setSearch("");
+              }}
+              className="text-xs text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-4"
+            >
+              Clear all filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

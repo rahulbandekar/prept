@@ -149,11 +149,11 @@ export default function EarningsSection({ stats, history }) {
       </div>
 
       {/* Withdrawal history */}
-      {history?.length > 0 && (
-        <div className="bg-[#0f0f11] border border-white/10 rounded-2xl p-8 flex flex-col gap-5">
-          <p className="text-xs font-semibold text-stone-500 tracking-widest uppercase">
-            Withdrawal history
-          </p>
+      <div className="bg-[#0f0f11] border border-white/10 rounded-2xl p-8 flex flex-col gap-5">
+        <p className="text-xs font-semibold text-stone-500 tracking-widest uppercase">
+          Withdrawal history
+        </p>
+        {history?.length > 0 ? (
           <div className="flex flex-col gap-3">
             {history.map((p) => (
               <div
@@ -181,8 +181,18 @@ export default function EarningsSection({ stats, history }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="py-8 flex flex-col items-center gap-3 text-center">
+            <span className="text-2xl">💸</span>
+            <p className="text-sm text-stone-600 font-light">
+              No withdrawals yet.
+            </p>
+            <p className="text-xs text-stone-700">
+              Complete sessions to earn credits, then request a payout any time.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Dialog */}
       <Dialog open={open} onOpenChange={handleOpenChange}>
