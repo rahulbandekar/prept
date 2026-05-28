@@ -21,8 +21,24 @@ const dmSans = DM_Sans({
 });
 
 export const metadata = {
-  title: "Prept",
-  description: "",
+  title: "Prept — AI-Powered Mock Interviews",
+  description:
+    "Book live mock interviews with senior engineers. Get AI-generated feedback reports, HD video, and real-time chat. Credit-based plans starting free.",
+  metadataBase: new URL("https://prept-tawny.vercel.app"),
+  openGraph: {
+    title: "Prept — AI-Powered Mock Interviews",
+    description:
+      "Book live mock interviews with senior engineers. Get AI-generated feedback reports, HD video, and real-time chat.",
+    url: "https://prept-tawny.vercel.app",
+    siteName: "Prept",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prept — AI-Powered Mock Interviews",
+    description:
+      "Book live mock interviews with senior engineers. Get AI-generated feedback reports, HD video, and real-time chat.",
+  },
 };
 
 export default function RootLayout({ children }) {
