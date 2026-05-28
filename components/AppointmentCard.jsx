@@ -14,6 +14,8 @@ import { Separator } from "./ui/separator";
 
 export function AppointmentCard({ booking, mode, isPast = false }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { loading: cancelling, fn: cancelFn } = useFetch(cancelBooking);
   const { has } = useAuth();
 
   const {
@@ -41,6 +43,11 @@ export function AppointmentCard({ booking, mode, isPast = false }) {
 
   const isUpcoming = status === "SCHEDULED";
   const isProcessing = status === "SCHEDULED" && isPast;
+
+  const handleCancel = async () => {
+    await cancelFn(booking.id);
+    setConfirmOpen(false);
+  };
 
   return (
     <>
@@ -225,6 +232,47 @@ export function AppointmentCard({ booking, mode, isPast = false }) {
                   </Badge>
                 </>
               )}
+
+            {mode === "interviewee" && isUpcoming && !isPast && (
+              <>
+                {!confirmOpen ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40 ml-auto"
+                    onClick={() => setConfirmOpen(true)}
+                  >
+                    <X size={12} />
+                    Cancel
+                  </Button>
+                ) : (
+                  <div className="w-full rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 flex items-center justify-between gap-3">
+                    <p className="text-xs text-red-400">
+                      Cancel this session? Your credits will be refunded.
+                    </p>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setConfirmOpen(false)}
+                        disabled={cancelling}
+                      >
+                        Keep
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="text-xs bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                        onClick={handleCancel}
+                        disabled={cancelling}
+                      >
+                        {cancelling ? "Cancelling…" : "Yes, cancel"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </article>
