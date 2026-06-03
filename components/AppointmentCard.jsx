@@ -11,6 +11,9 @@ import { FeedbackModal } from "./FeedbackModal";
 import { formatDate, formatDuration, formatTime } from "@/lib/helpers";
 import { RATING_LABEL, RATING_STYLES, STATUS_STYLES } from "@/lib/data";
 import { Separator } from "./ui/separator";
+import useFetch from "@/hooks/use-fetch";
+import { cancelBooking } from "@/actions/appointments";
+import { X } from "lucide-react";
 
 export function AppointmentCard({ booking, mode, isPast = false }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
